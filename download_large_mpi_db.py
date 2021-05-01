@@ -52,7 +52,7 @@ def download():
                 fname=filename,
                 origin=url,
                 extract=True,
-                cache_subdir='large-mpi-db'
+                cache_subdir='large_mpi_db'
             )
 
 
@@ -101,6 +101,6 @@ def delete():
 
 
 if __name__ == "__main__":
-    # delete()
+    delete()
     download()
     normalize()
