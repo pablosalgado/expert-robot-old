@@ -25,7 +25,7 @@ def without_neutral():
 
     df = pandas.read_csv('make_videos.csv')
 
-    for label in constants.LABELS:
+    for label in constants.LABELS[38:47]:
         for code in constants.CODES:
             q = df.query(f'code == "{code}" & label == "{label}"')
             start = q.iloc[0].start
