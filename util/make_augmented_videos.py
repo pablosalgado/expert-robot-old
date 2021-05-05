@@ -51,7 +51,7 @@ def augment_videos() -> None:
             # Applies 20 transformations
             for t_count, transformation in enumerate(get_random_transformations()):
                 # Video output path
-                video_path = f'{constants.WONE_AUGMENTED_VIDEOS}/{code}_{label}_{t_count:02d}.avi'
+                video_path = f'{constants.WONE_AUGMENTED_VIDEOS}/{label}/{code}_{label}_{t_count:02d}.avi'
 
                 # Checks if video has been already created
                 q = df.query(f'code == "{code}" & label == "{label}"')
@@ -63,7 +63,7 @@ def augment_videos() -> None:
                     continue
 
                 # Creates output dir and video output stream
-                os.makedirs(constants.WONE_AUGMENTED_VIDEOS, exist_ok=True)
+                os.makedirs(f'{constants.WONE_AUGMENTED_VIDEOS}/{label}', exist_ok=True)
                 out = cv2.VideoWriter(
                     video_path,
                     cv2.VideoWriter_fourcc(*'DIVX'),
@@ -88,7 +88,7 @@ def augment_videos() -> None:
 
                     # Saves the original resized PNG for future reference
                     if i_count == 0:
-                        cv2.imwrite(f'{constants.WONE_AUGMENTED_VIDEOS}/transformation_oo.png', x)
+                        cv2.imwrite(f'{constants.WONE_AUGMENTED_VIDEOS}/{label}/transformation_oo.png', x)
 
                     # Actually applies the transformation to the frame
                     x = apply_affine_transform(
@@ -122,7 +122,7 @@ def augment_videos() -> None:
                         x = np.repeat(x[:, :, np.newaxis], 3, axis=2)
 
                     if i_count == 0:
-                        cv2.imwrite(f'{constants.WONE_AUGMENTED_VIDEOS}/transformation_{t_count:02d}.png', x)
+                        cv2.imwrite(f'{constants.WONE_AUGMENTED_VIDEOS}/{label}/transformation_{t_count:02d}.png', x)
 
                     # Writes the frame to the video output stream.
                     out.write(x)
