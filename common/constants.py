@@ -3,14 +3,20 @@ import pathlib
 # Current user home directory
 HOME = str(pathlib.Path.home())
 
-# Directory to download the Large MPI DB
-LARGE_MPI_DB_PATH = f'{HOME}/.keras/large_mpi_db'
+LG_MPI_DB='lg_mpi_db'
 
-# Videos without neutral expressions
-VIDEOS_WONE = f'{HOME}/.keras/large_mpi_videos_without_neutral_expressions'
+# Directory to download the Large MPI DB
+LG_MPI_DB_PATH = f'{HOME}/.keras/{LG_MPI_DB}'
+
+# MPI videos
+VIDEOS = f'{HOME}/.keras/lg_mpi_videos'
+
+# MPI videos without neutral expressions
+WONE_VIDEOS = f'{HOME}/.keras/lg_mpi_wone_videos'
+WONE_AUGMENTED_VIDEOS = f'{HOME}/.keras/lg_mpi_wone_augmented_videos'
 
 # The Large MPI DB were recorded with 10 actors and actresses. These are their
-# codes.
+# codes. Don't sort as this is the order to download.
 CODES = ('islf', 'kabf', 'lekf', 'milf', 'silf', 'cawm', 'chsm', 'jakm', 'juhm', 'mamm')
 
 # The class names or categories for each facial expression.

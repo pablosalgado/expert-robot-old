@@ -13,7 +13,7 @@ import pandas
 from common import constants
 
 
-def without_neutral():
+def without_neutral() -> None:
     """
     Builds a set of videos excluding neutral facial expression frames.
 
@@ -23,7 +23,7 @@ def without_neutral():
     :return: None
     """
 
-    df = pandas.read_csv('make_videos.csv')
+    df = pandas.read_csv(f'{pathlib.Path(__file__).parent.as_posix()}/videos.csv')
 
     for label in constants.LABELS[38:47]:
         for code in constants.CODES:
@@ -32,7 +32,7 @@ def without_neutral():
             stop = q.iloc[0].stop + 1
             picture_array = []
             for index in range(start, stop):
-                template_path = f'{constants.LARGE_MPI_DB_PATH}/{label}/{code}_{label}_{index:03}.png'
+                template_path = f'{constants.LG_MPI_DB_PATH}/{label}/{code}_{label}_{index:03}.png'
                 print(template_path)
                 picture_path = pathlib.Path(template_path).absolute().as_posix()
                 picture = cv2.imread(picture_path)
@@ -41,8 +41,8 @@ def without_neutral():
                 picture_array.append(picture)
 
             # Write video
-            pathlib.Path(f'{constants.VIDEOS_WONE}/{label}').mkdir(parents=True, exist_ok=True)
-            video_path = pathlib.Path(f'{constants.VIDEOS_WONE}/{label}/{code}_{label}.avi')
+            pathlib.Path(f'{constants.WONE_VIDEOS}/{label}').mkdir(parents=True, exist_ok=True)
+            video_path = pathlib.Path(f'{constants.WONE_VIDEOS}/{label}/{code}_{label}.avi')
 
             print(video_path.absolute().as_posix())
 

@@ -34,7 +34,11 @@ from common import constants
 URL_PREFIX = 'http://www.informatik.tu-cottbus.de/gs/ZipArchiveLargeDB/1_ZipArchive-CentralCam_old-MPI-Parsing/'
 
 
-def download():
+def download() -> None:
+    """
+
+    :return:
+    """
     # Ten actors and actresses were recorded, each part is named after them.
     for n, code in enumerate(constants.CODES, start=1):
         # 13 parts are provided for each actor or actress.
@@ -52,16 +56,16 @@ def download():
                 fname=filename,
                 origin=url,
                 extract=True,
-                cache_subdir='large_mpi_db'
+                cache_subdir=constants.LG_MPI_DB
             )
 
 
-def normalize():
+def normalize() -> None:
     """
     Normalize the extracted directories and files by changing '-' to '_' and case to lower.
-    :return: Nothing
+    :return: None
     """
-    for path in pathlib.Path(f'{constants.LARGE_MPI_DB_PATH}').iterdir():
+    for path in pathlib.Path(f'{constants.LG_MPI_DB_PATH}').iterdir():
         if path.is_dir():
             # Directory name will be the label of the class
             label = path.name.lower().replace('-', '_')
@@ -92,8 +96,12 @@ def normalize():
             print(f'{old} -> {new}')
 
 
-def delete():
-    for path in pathlib.Path(f'{constants.LARGE_MPI_DB_PATH}').iterdir():
+def delete() -> None:
+    """
+
+    :return:
+    """
+    for path in pathlib.Path(f'{constants.LG_MPI_DB_PATH}').iterdir():
         if path.is_dir():
             for file in path.glob('*'):
                 file.unlink()
