@@ -36,8 +36,8 @@ URL_PREFIX = 'http://www.informatik.tu-cottbus.de/gs/ZipArchiveLargeDB/1_ZipArch
 
 def download() -> None:
     """
-
-    :return:
+    Downloads the Large MPI Database
+    :return: None
     """
     # Ten actors and actresses were recorded, each part is named after them.
     for n, code in enumerate(constants.CODES, start=1):
@@ -62,7 +62,7 @@ def download() -> None:
 
 def normalize() -> None:
     """
-    Normalize the extracted directories and files by changing '-' to '_' and case to lower.
+    Normalizes the extracted directories and files by changing '-' to '_' and case to lower.
     :return: None
     """
     for path in pathlib.Path(f'{constants.LG_MPI_DB_PATH}').iterdir():
@@ -98,7 +98,7 @@ def normalize() -> None:
 
 def delete() -> None:
     """
-
+    Deletes all data in the MPI Database path but the downloaded ZIPs.
     :return:
     """
     for path in pathlib.Path(f'{constants.LG_MPI_DB_PATH}').iterdir():

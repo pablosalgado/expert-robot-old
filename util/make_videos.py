@@ -41,8 +41,8 @@ def without_neutral() -> None:
                 picture_array.append(picture)
 
             # Write video
-            pathlib.Path(f'{constants.WONE_VIDEOS}/{label}').mkdir(parents=True, exist_ok=True)
-            video_path = pathlib.Path(f'{constants.WONE_VIDEOS}/{label}/{code}_{label}.avi')
+            pathlib.Path(f'{constants.MPI_WONE_DATASET_PATH}/{label}').mkdir(parents=True, exist_ok=True)
+            video_path = pathlib.Path(f'{constants.MPI_WONE_DATASET_PATH}/{label}/{code}_{label}.avi')
 
             print(video_path.absolute().as_posix())
 

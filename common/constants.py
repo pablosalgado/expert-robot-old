@@ -3,17 +3,23 @@ import pathlib
 # Current user home directory
 HOME = str(pathlib.Path.home())
 
-LG_MPI_DB='lg_mpi_db'
+# Keras directory in home
+KERAS_PATH = f'{HOME}/.keras'
+KERAS_DATASETS_PATH = f'{KERAS_PATH}/datasets'
 
 # Directory to download the Large MPI DB
-LG_MPI_DB_PATH = f'{HOME}/.keras/{LG_MPI_DB}'
+LG_MPI_DB='lg_mpi_db'
+LG_MPI_DB_PATH = f'{KERAS_PATH}/{LG_MPI_DB}'
 
-# MPI videos
-VIDEOS = f'{HOME}/.keras/lg_mpi_videos'
+# MPI videos datasets
+MPI_DATASET = 'lg_mpi'
+MPI_DATASET_PATH = f'{KERAS_DATASETS_PATH}/{MPI_DATASET}'
 
 # MPI videos without neutral expressions
-WONE_VIDEOS = f'{HOME}/.keras/lg_mpi_wone_videos'
-WONE_AUGMENTED_VIDEOS = f'{HOME}/.keras/lg_mpi_wone_augmented_videos'
+MPI_WONE_DATASET = f'{MPI_DATASET}_wone'
+MPI_WONE_DATASET_PATH = f'{KERAS_DATASETS_PATH}/{MPI_WONE_DATASET}'
+MPI_WONE_AUGMENTED_DATASET = f'{MPI_WONE_DATASET}_augmented'
+MPI_WONE_AUGMENTED_DATASET_PATH = f'{KERAS_DATASETS_PATH}/{MPI_WONE_AUGMENTED_DATASET}'
 
 # The Large MPI DB were recorded with 10 actors and actresses. These are their
 # codes. Don't sort as this is the order to download.
