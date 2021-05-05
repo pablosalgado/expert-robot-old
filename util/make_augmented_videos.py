@@ -20,11 +20,11 @@ def get_random_transformations() -> []:
     transformations = []
 
     for x in range(20):
-        z = np.random.uniform(.95, 1.05)
+        z = np.random.uniform(.9, 1.1)
         transformations.append({
             'theta': np.random.uniform(-5, 5),
-            'tx': np.random.uniform(-5, 5),
-            'ty': np.random.uniform(-5, 5),
+            'tx': np.random.uniform(-10, 10),
+            'ty': np.random.uniform(-10, 10),
             'shear': np.random.uniform(-5, 5),
             'zx': z,
             'zy': z,
