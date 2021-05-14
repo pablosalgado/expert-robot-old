@@ -30,6 +30,10 @@ PYTHONPATH=$PYTHONPATH:. python util/make_videos.py
 PYTHONPATH=$PYTHONPATH:. python util/make_augmented_videos.py
 ```
 
+## Run a trial
+```
+PYTHONPATH=$PYTHONPATH:. python trial_01.py 
+```
 [1] K. Kaulard, D. W. Cunningham, H. H. Bülthoff, and C. Wallraven, “The MPI Facial Expression Database — A Validated Database of Emotional and Conversational Facial Expressions,” PLoS ONE, vol. 7, no. 3, p. e32321, Mar. 2012, doi: 10.1371/journal.pone.0032321.
 
 
