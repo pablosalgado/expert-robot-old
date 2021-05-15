@@ -134,7 +134,7 @@ def train():
                 validation_idg = train_idg.get_validation_generator()
 
                 row = {
-                    'trial': f'paper_01_trial_{TRIAL}',
+                    'trial': f'trial_{TRIAL}',
                     'cycle': 'training',
                     'code': code,
                     'batch_size': batch_size,
@@ -145,7 +145,7 @@ def train():
                 data = data.append(row, ignore_index=True)
 
                 row = {
-                    'trial': f'paper_01_trial_{TRIAL}',
+                    'trial': f'trial_{TRIAL}',
                     'cycle': 'validation',
                     'code': code,
                     'batch_size': batch_size,
