@@ -25,8 +25,8 @@ tf.compat.v1.keras.backend.set_session(sess)
 
 # Parameters
 TRIAL = '01'
-BATCH_SIZE = [32, 64]
-TIME_STEPS = [12, 24]
+BATCH_SIZE = [16, 32, 64]
+TIME_STEPS = [6, 12, 24]
 EPOCHS = 1000
 
 TRL_PATH = f'models/trial_{TRIAL}'
