@@ -29,7 +29,7 @@ def save_sample(filename, g, index=0, randomize=False, row_width=22, row_height=
 
     rows = len(sequences)
     index = 1
-    plt.figure(figsize=(row_width, row_height * rows))
+    plt.figure(figsize=(row_width, row_height * rows), num=1, clear=True)
     for batchid, sequence in enumerate(sequences):
         classid = np.argmax(labels[batchid])
         classname = g.classes[classid]

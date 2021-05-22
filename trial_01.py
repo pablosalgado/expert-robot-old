@@ -15,7 +15,7 @@ from keras_video.sliding import SlidingFrameGenerator
 
 from common import constants, utils
 
-# Avoids the CUPTI_ERROR_INSUFFICIENT_PRIVILEGES running in the ATCBIOSIMUL server at UGR with 2 GeForce RTX 2080
+# Avoid the CUPTI_ERROR_INSUFFICIENT_PRIVILEGES running in the ATCBIOSIMUL server at UGR with 2 GeForce RTX 2080
 # SUPER GPU cards.
 config = tf.compat.v1.ConfigProto()
 config.gpu_options.allow_growth = True
@@ -40,7 +40,7 @@ def build_model(time_steps, nout):
         weights='imagenet'
     )
 
-    # Allows to retrain the last convolutional layer.
+    # Allow to retrain the last convolutional layer.
     for layer in cnn_model.layers[:-3]:
         layer.trainable = False
 
@@ -91,7 +91,7 @@ def train():
     data['trial'] = TRIAL
 
     for code in constants.CODES:
-        # Deletes all extracted directories from the dataset and extract again.
+        # Remove all of the extracted directories from the dataset and extract them again.
         shutil.rmtree(constants.MPI_WONE_AUGMENTED_DATASET_PATH, ignore_errors=True)
         tf.keras.utils.get_file(
             fname=f'{constants.MPI_WONE_AUGMENTED_DATASET}.tar',
@@ -99,7 +99,7 @@ def train():
             extract=True
         )
 
-        # So it can be deleted the next actor/actress to leave out him/her in training
+        # Delete the next actress to leave her out of the training.
         files = glob.glob(f'{constants.MPI_WONE_AUGMENTED_DATASET_PATH}/**/{code}*.avi', recursive=True)
         for file in files:
             os.remove(file)
@@ -173,7 +173,7 @@ def train():
                     tf.keras.callbacks.CSVLogger(
                         filename=path + '/log.csv'
                     ),
-                    # Avoids the CUPTI_ERROR_INSUFFICIENT_PRIVILEGES running in the ATCBIOSIMUL server at UGR with 2
+                    # Avoid the CUPTI_ERROR_INSUFFICIENT_PRIVILEGES running in the ATCBIOSIMUL server at UGR with 2
                     # GeForce RTX 2080 SUPER GPU cards.
                     # tf.keras.callbacks.TensorBoard(
                     #     log_dir=path + '/tb',
