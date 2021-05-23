@@ -198,14 +198,14 @@ def train():
                         ),
                     ]
 
-                    # history = model.fit(
-                    #     train_idg,
-                    #     validation_data=validation_idg,
-                    #     callbacks=callbacks,
-                    #     epochs=EPOCHS,
-                    # )
-                    #
-                    # utils.plot_acc_loss(history, path + '/plot.png')
+                    history = model.fit(
+                        train_idg,
+                        validation_data=validation_idg,
+                        callbacks=callbacks,
+                        epochs=EPOCHS,
+                    )
+
+                    utils.plot_acc_loss(history, path + '/plot.png')
 
                     data.to_csv(TRL_PATH + '/sequences.csv')
 
