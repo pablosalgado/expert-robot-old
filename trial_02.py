@@ -14,6 +14,7 @@ import numpy as np
 import pandas
 import tensorflow as tf
 
+import common.constants
 from common import constants, utils
 from generators.OverlappedSlidingWindow import OverlappedSlidingWindow
 
@@ -27,6 +28,7 @@ tf.compat.v1.keras.backend.set_session(sess)
 
 # Parameters
 TRIAL = '02'
+CODES = constants.CODES[:]
 BATCH_SIZE = [16, 32, 64]
 TIME_STEPS = [6, 12, 24, 48]  # The smallest video just have 56 frames
 OVERLAPS = [round(n, 1) for n in np.arange(0, 1, 0.1)]
@@ -94,7 +96,7 @@ def train():
                                            'sequences'])
     data['trial'] = TRIAL
 
-    for code in constants.CODES:
+    for code in CODES:
         # Remove all of the extracted directories from the dataset and extract them again.
         shutil.rmtree(constants.MPI_WONE_AUGMENTED_DATASET_PATH, ignore_errors=True)
         tf.keras.utils.get_file(
