@@ -7,6 +7,7 @@
 
 import glob
 import os
+import pathlib
 import shutil
 
 import numpy as np
@@ -136,7 +137,9 @@ def train():
                         use_frame_cache=False
                     )
 
-                    utils.save_sample(f'{path}/sample.png', train_idg)
+                    sample_path = TRL_PATH + f'/{code}/{batch_size}/{time_steps}/sample.png'
+                    if not os.path.exists(sample_path):
+                        utils.save_sample(sample_path, train_idg)
 
                     validation_idg = train_idg.get_validation_generator()
 
@@ -193,14 +196,14 @@ def train():
                         ),
                     ]
 
-                    history = model.fit(
-                        train_idg,
-                        validation_data=validation_idg,
-                        callbacks=callbacks,
-                        epochs=EPOCHS,
-                    )
-
-                    utils.plot_acc_loss(history, path + '/plot.png')
+                    # history = model.fit(
+                    #     train_idg,
+                    #     validation_data=validation_idg,
+                    #     callbacks=callbacks,
+                    #     epochs=EPOCHS,
+                    # )
+                    #
+                    # utils.plot_acc_loss(history, path + '/plot.png')
 
                     data.to_csv(TRL_PATH + '/sequences.csv')
 
