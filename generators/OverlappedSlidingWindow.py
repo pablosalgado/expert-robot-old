@@ -6,7 +6,7 @@ from tensorflow.keras.preprocessing.image import img_to_array
 
 class OverlappedSlidingWindow(VideoFrameGenerator):
     """
-    SlidingFrameGenerator is useful to get several sequence of
+    OverlappedSlidingWindow is useful to get several sequence of
     the same "action" by sliding the cursor of video. For example, with a
     video that have 60 frames using 30 frames per second, and if you want
     to pick 6 frames with a 50% overlap, the generator will return:
