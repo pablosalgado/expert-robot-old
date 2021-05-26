@@ -6,15 +6,13 @@
 #
 
 import glob
+import logging
 import os
-import pathlib
 import shutil
 
-import numpy as np
 import pandas
 import tensorflow as tf
 
-import common.constants
 from common import constants, utils
 from generators.OverlappedSlidingWindow import OverlappedSlidingWindow
 
@@ -27,14 +25,14 @@ tf.compat.v1.keras.backend.set_session(sess)
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 # Parameters
-TRIAL = '02'
+TRIAL = 'trial_02'
 CODES = constants.CODES[:]
 BATCH_SIZE = [16, 32, 64]
 TIME_STEPS = [6, 12, 24, 48]  # The smallest video just have 56 frames
-OVERLAPS = [round(n, 1) for n in np.arange(0, 1, 0.1)]
+OVERLAPS = [0.0]
 EPOCHS = 1000
 
-TRL_PATH = f'models/trial_{TRIAL}'
+TRL_PATH = f'models/{TRIAL}'
 
 
 def build_model(time_steps, nout):
@@ -98,15 +96,17 @@ def train():
 
     for code in CODES:
         # Remove all of the extracted directories from the dataset and extract them again.
-        shutil.rmtree(constants.MPI_WONE_AUGMENTED_DATASET_PATH, ignore_errors=True)
+        shutil.rmtree(f'{constants.KERAS_PATH}/{TRIAL}/{constants.MPI_WONE_AUGMENTED_DATASET}', ignore_errors=True)
         tf.keras.utils.get_file(
             fname=f'{constants.MPI_WONE_AUGMENTED_DATASET}.tar',
             origin=f'https://s3.us-east-2.amazonaws.com/datasets.pablosalgado.co/lg_mpi_db/{constants.MPI_WONE_AUGMENTED_DATASET}.tar',
+            cache_subdir=TRIAL,
             extract=True
         )
 
         # Delete the next actress to leave her out of the training.
-        files = glob.glob(f'{constants.MPI_WONE_AUGMENTED_DATASET_PATH}/**/{code}*.avi', recursive=True)
+        files = glob.glob(f'{constants.KERAS_PATH}/{TRIAL}/{constants.MPI_WONE_AUGMENTED_DATASET}/**/{code}*.avi',
+                          recursive=True)
         for file in files:
             os.remove(file)
 
@@ -128,7 +128,7 @@ def train():
                     train_idg = OverlappedSlidingWindow(
                         overlap=overlap,
                         classes=constants.LABELS[38:47],
-                        glob_pattern=constants.MPI_WONE_AUGMENTED_DATASET_PATH + '/{classname}/*.avi',
+                        glob_pattern=constants.KERAS_PATH + '/' + TRIAL + '/' + constants.MPI_WONE_AUGMENTED_DATASET + '/{classname}/*.avi',
                         nb_frames=time_steps,
                         split_val=.2,
                         shuffle=True,
@@ -146,7 +146,7 @@ def train():
                     validation_idg = train_idg.get_validation_generator()
 
                     row = {
-                        'trial': f'trial_{TRIAL}',
+                        'trial': f'{TRIAL}',
                         'cycle': 'training',
                         'code': code,
                         'batch_size': batch_size,
@@ -158,7 +158,7 @@ def train():
                     data = data.append(row, ignore_index=True)
 
                     row = {
-                        'trial': f'trial_{TRIAL}',
+                        'trial': f'{TRIAL}',
                         'cycle': 'validation',
                         'code': code,
                         'batch_size': batch_size,
@@ -168,6 +168,8 @@ def train():
                         'sequences': len(validation_idg.vid_info)
                     }
                     data = data.append(row, ignore_index=True)
+
+                    data.to_csv(TRL_PATH + '/sequences.csv')
 
                     # Configure callbacks
                     callbacks = [
@@ -205,10 +207,15 @@ def train():
                         epochs=EPOCHS,
                     )
 
-                    utils.plot_acc_loss(history, path + '/plot.png')
-
-                    data.to_csv(TRL_PATH + '/sequences.csv')
+                    utils.plot_acc_loss(history, f'{path}/{code}-{batch_size}-{time_steps}-{overlap}-plot.png')
 
 
 if __name__ == '__main__':
-    train()
+    os.makedirs(f'{TRL_PATH}', exist_ok=True)
+    logging.basicConfig(filename=f'{TRL_PATH}/error.log', filemode='w')
+    logger = logging.getLogger(__name__)
+    try:
+        train()
+    except Exception:
+        print("Ended with errors.")
+        logger.exception("")

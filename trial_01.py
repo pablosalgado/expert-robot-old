@@ -6,6 +6,7 @@
 #
 
 import glob
+import logging
 import os
 import shutil
 
@@ -24,12 +25,13 @@ tf.compat.v1.keras.backend.set_session(sess)
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 # Parameters
-TRIAL = '01'
+TRIAL = 'trial_01'
+CODES = constants.CODES[:]
 BATCH_SIZE = [16, 32, 64]
 TIME_STEPS = [6, 12, 24]
 EPOCHS = 1000
 
-TRL_PATH = f'models/trial_{TRIAL}'
+TRL_PATH = f'models/{TRIAL}'
 
 
 def build_model(time_steps, nout):
@@ -90,17 +92,19 @@ def train():
     data = pandas.DataFrame(None, columns=['trial', 'cycle', 'code', 'batch_size', 'time_steps', 'files', 'sequences'])
     data['trial'] = TRIAL
 
-    for code in constants.CODES:
+    for code in CODES:
         # Remove all of the extracted directories from the dataset and extract them again.
-        shutil.rmtree(constants.MPI_WONE_AUGMENTED_DATASET_PATH, ignore_errors=True)
+        shutil.rmtree(f'{constants.KERAS_PATH}/{TRIAL}/{constants.MPI_WONE_AUGMENTED_DATASET}', ignore_errors=True)
         tf.keras.utils.get_file(
             fname=f'{constants.MPI_WONE_AUGMENTED_DATASET}.tar',
             origin=f'https://s3.us-east-2.amazonaws.com/datasets.pablosalgado.co/lg_mpi_db/{constants.MPI_WONE_AUGMENTED_DATASET}.tar',
+            cache_subdir=TRIAL,
             extract=True
         )
 
         # Delete the next actress to leave her out of the training.
-        files = glob.glob(f'{constants.MPI_WONE_AUGMENTED_DATASET_PATH}/**/{code}*.avi', recursive=True)
+        files = glob.glob(f'{constants.KERAS_PATH}/{TRIAL}/{constants.MPI_WONE_AUGMENTED_DATASET}/**/{code}*.avi',
+                          recursive=True)
         for file in files:
             os.remove(file)
 
@@ -118,7 +122,7 @@ def train():
 
                 train_idg = SlidingFrameGenerator(
                     classes=constants.LABELS[38:47],
-                    glob_pattern=constants.MPI_WONE_AUGMENTED_DATASET_PATH + '/{classname}/*.avi',
+                    glob_pattern=constants.KERAS_PATH + '/' + TRIAL + '/' + constants.MPI_WONE_AUGMENTED_DATASET + '/{classname}/*.avi',
                     nb_frames=time_steps,
                     split_val=.2,
                     shuffle=True,
@@ -129,12 +133,14 @@ def train():
                     use_frame_cache=False
                 )
 
-                utils.save_sample(f'{path}/sample.png', train_idg)
+                sample_path = TRL_PATH + f'/{code}/{batch_size}/{time_steps}/sample.png'
+                if not os.path.exists(sample_path):
+                    utils.save_sample(sample_path, train_idg)
 
                 validation_idg = train_idg.get_validation_generator()
 
                 row = {
-                    'trial': f'trial_{TRIAL}',
+                    'trial': f'{TRIAL}',
                     'cycle': 'training',
                     'code': code,
                     'batch_size': batch_size,
@@ -145,7 +151,7 @@ def train():
                 data = data.append(row, ignore_index=True)
 
                 row = {
-                    'trial': f'trial_{TRIAL}',
+                    'trial': f'{TRIAL}',
                     'cycle': 'validation',
                     'code': code,
                     'batch_size': batch_size,
@@ -154,6 +160,8 @@ def train():
                     'sequences': len(validation_idg.vid_info)
                 }
                 data = data.append(row, ignore_index=True)
+
+                data.to_csv(TRL_PATH + '/sequences.csv')
 
                 # Configure callbacks
                 callbacks = [
@@ -191,10 +199,15 @@ def train():
                     epochs=EPOCHS,
                 )
 
-                utils.plot_acc_loss(history, path + '/plot.png')
-
-    data.to_csv(TRL_PATH + '/sequences.csv')
+                utils.plot_acc_loss(history, f'{path}/{code}-{batch_size}-{time_steps}-plot.png')
 
 
 if __name__ == '__main__':
-    train()
+    os.makedirs(f'{TRL_PATH}', exist_ok=True)
+    logging.basicConfig(filename=f'{TRL_PATH}/error.log', filemode='w')
+    logger = logging.getLogger(__name__)
+    try:
+        train()
+    except Exception:
+        print("Ended with errors.")
+        logger.exception("")

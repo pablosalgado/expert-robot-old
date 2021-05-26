@@ -6,6 +6,7 @@
 #
 
 import glob
+import logging
 import os
 import shutil
 
@@ -210,4 +211,11 @@ def train():
 
 
 if __name__ == '__main__':
-    train()
+    os.makedirs(f'{TRL_PATH}', exist_ok=True)
+    logging.basicConfig(filename=f'{TRL_PATH}/error.log', filemode='w')
+    logger = logging.getLogger(__name__)
+    try:
+        train()
+    except Exception:
+        print("Ended with errors.")
+        logger.exception("")
