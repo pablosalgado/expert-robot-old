@@ -1,7 +1,14 @@
+import glob
+import os
+import pathlib
 import random as rnd
+import shutil
 
 import matplotlib.pyplot as plt
 import numpy as np
+import tensorflow as tf
+
+from common import constants
 
 
 def save_sample(filename, g, index=0, randomize=False, row_width=22, row_height=5):
@@ -83,3 +90,28 @@ def plot_acc_loss(history, path):
     plt.subplot(1, 2, 2)
     plot_loss(history)
     plt.savefig(path)
+
+
+def prepare_test_dataset(dataset, subdir, code) -> None:
+    """
+    Downloads the specified dataset to the the specified Keras cache subdirectory and deletes the videos for the actress
+
+    :param dataset: Dataset to download
+    :param subdir: Subdirectory to extract the dataset
+    :param code: Code of the actor
+    """
+    # Remove all of the extracted directories from the dataset and extract them again.
+    shutil.rmtree(f'{constants.KERAS_PATH}/{subdir}/{dataset}', ignore_errors=True)
+    tf.keras.utils.get_file(
+        fname=f'{dataset}.tar',
+        origin=f'https://s3.us-east-2.amazonaws.com/datasets.pablosalgado.co/lg_mpi_db/{dataset}.tar',
+        cache_subdir=subdir,
+        extract=True
+    )
+
+    # Delete the next actress to leave her out of the training.
+    files = glob.glob(f'{constants.KERAS_PATH}/{subdir}/{dataset}/**/*.avi',
+                      recursive=True)
+    for file in files:
+        if not pathlib.PurePath(file).parts[-1].startswith(code):
+            os.remove(file)
