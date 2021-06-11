@@ -20,6 +20,13 @@ EVALUATIONS_FILE = pathlib.Path(__file__).parent / 'evaluation.csv'
 ERRORS_FILE = pathlib.Path(__file__).parent / 'error.log'
 CLASSES = constants.LABELS[38:47]
 
+# Avoid the CUPTI_ERROR_INSUFFICIENT_PRIVILEGES running in the ATCBIOSIMUL server at UGR with 2 GeForce RTX 2080
+# SUPER GPU cards.
+config = tf.compat.v1.ConfigProto()
+config.gpu_options.allow_growth = True
+sess = tf.compat.v1.Session(config=config)
+tf.compat.v1.keras.backend.set_session(sess)
+
 
 class Evaluation:
     def __init__(self) -> None:
