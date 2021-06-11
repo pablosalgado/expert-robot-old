@@ -1,3 +1,4 @@
+import logging
 import pathlib
 
 import numpy as np
@@ -15,6 +16,8 @@ TIME_STEPS = [6, 12, 24, 48]  # The smallest video just have 56 frames
 OVERLAPS = [round(n, 1) for n in np.arange(0, 1, 0.1)]
 
 MODELS_PATH = pathlib.Path(__file__).parent.parent / 'models'
+EVALUATIONS_FILE = pathlib.Path(__file__).parent / 'evaluation.csv'
+ERRORS_FILE = pathlib.Path(__file__).parent / 'error.log'
 CLASSES = constants.LABELS[38:47]
 
 
@@ -112,7 +115,7 @@ class Evaluation:
             ignore_index=True
         )
 
-        self._evaluations.to_csv('evaluation.csv')
+        self._evaluations.to_csv(EVALUATIONS_FILE.as_posix())
         print(evaluation)
 
     def evaluate_time_step(self, trial, code, batch_size, time_step):
@@ -140,4 +143,10 @@ class Evaluation:
 
 
 if __name__ == '__main__':
-    Evaluation().evaluate()
+    logging.basicConfig(filename=f'{ERRORS_FILE.as_posix()}', filemode='w')
+    logger = logging.getLogger(__name__)
+    try:
+        Evaluation().evaluate()
+    except Exception:
+        print("Ended with errors.")
+        logger.exception("")
