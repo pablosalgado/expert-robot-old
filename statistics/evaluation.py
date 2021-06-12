@@ -67,7 +67,10 @@ class Evaluation:
         utils.prepare_test_dataset(constants.MPI_WONE_AUGMENTED_DATASET, 'evaluation', code)
 
         tf.config.experimental_run_functions_eagerly(True)
-        model = tf.keras.models.load_model(model_path)
+        try:
+            model = tf.keras.models.load_model(model_path)
+        except Exception:
+            pass
 
         data_aug = tf.keras.preprocessing.image.ImageDataGenerator(
             preprocessing_function=tf.keras.applications.mobilenet.preprocess_input
