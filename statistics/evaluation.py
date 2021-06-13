@@ -54,7 +54,10 @@ class Evaluation:
                 ]
             )
         else:
-            self._evaluations = pd.read_csv(EVALUATIONS_FILE.as_posix())
+            self._evaluations = pd.read_csv(
+                EVALUATIONS_FILE.as_posix(),
+                index_col=0
+            )
 
     def evaluate_model(self, trial, code, batch_size, sequence_size, overlap=None):
         # Filter conditions to find if a given model has been evaluated.
