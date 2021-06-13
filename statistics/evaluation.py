@@ -93,6 +93,8 @@ class Evaluation:
             print(f'Skipping: {path}')
             return
 
+        tf.keras.backend.clear_session()
+
         # Get training data of the saved best model.
         log_data = pd.read_csv(log_path.as_posix())
         max_val_accuracy = log_data.iloc[log_data.val_accuracy.idxmax()]
