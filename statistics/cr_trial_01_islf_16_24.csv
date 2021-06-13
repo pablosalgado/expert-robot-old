@@ -1,0 +1,12 @@
+,,precision,recall,f1-score,support
+0,smiling_encouraging,0.0,0.0,0.0,500
+1,smiling_endearment,0.0,0.0,0.0,500
+2,smiling_flirting,0.0,0.0,0.0,500
+3,smiling_sad_nostalgia,0.0,0.0,0.0,500
+4,smiling_sardonic,0.0,0.0,0.0,500
+5,smiling_triumphant,0.0,0.0,0.0,500
+6,smiling_uncertain,0.1111111111111111,1.0,0.19999999999999998,500
+7,smiling_winning,0.0,0.0,0.0,500
+8,smiling_yeah_right,0.0,0.0,0.0,500
+9,macro avg,0.012345679012345678,0.1111111111111111,0.02222222222222222,4500
+10,weighted avg,0.012345679012345678,0.1111111111111111,0.02222222222222222,4500
