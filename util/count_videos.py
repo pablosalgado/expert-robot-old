@@ -10,7 +10,7 @@ from common import constants
 pathlib.Path(constants.LG_MPI_DB_PATH)
 
 
-def count_videos():
+def count_videos() -> None:
     csv_file = f'{pathlib.Path(__file__).parent.as_posix()}/videos.csv'
 
     df = pandas.read_csv(
