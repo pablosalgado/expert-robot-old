@@ -18,7 +18,7 @@ sess = tf.compat.v1.Session(config=config)
 tf.compat.v1.keras.backend.set_session(sess)
 
 
-def store_videos() -> None:
+def extract_features() -> None:
     # Remove all of the extracted directories from the dataset and extract them again.
     shutil.rmtree(f'{constants.KERAS_PATH}/{constants.MPI_WONE_AUGMENTED_DATASET}', ignore_errors=True)
     tf.keras.utils.get_file(
@@ -88,4 +88,4 @@ def store_videos() -> None:
 
 
 if __name__ == '__main__':
-    store_videos()
+    extract_features()
