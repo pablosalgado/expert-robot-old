@@ -19,6 +19,7 @@ class OverlappedSequenceBuilder:
             overlap: float,
             sequence_size: int,
             split: float,
+            test: str,
             batch_size: int = 32,
             shuffle=True
     ) -> None:
@@ -30,6 +31,7 @@ class OverlappedSequenceBuilder:
         self.__overlap = overlap
         self.__sequence_size = sequence_size
         self.__split = split
+        self.__test = test
         self.__batch_size = batch_size
         self.__shuffle = shuffle
 
@@ -59,6 +61,9 @@ class OverlappedSequenceBuilder:
             names = file[self.__path][label]
 
             for name in names:
+                if self.__test in name:
+                    continue
+
                 files_count += 1
 
                 dataset = file[self.__path][label][name]

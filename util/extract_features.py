@@ -27,7 +27,11 @@ def extract_features() -> None:
         extract=True
     )
 
-    model = tf.keras.applications.MobileNet(include_top=False)
+    model = tf.keras.applications.MobileNet(
+        include_top=False,
+        input_shape=(224, 224, 3),
+        weights='imagenet'
+    )
 
     for label in LABELS:
         for code in CODES:
