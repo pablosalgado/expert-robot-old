@@ -5,16 +5,14 @@
 # contact: pabloasalgado@gmail.com
 #
 
-import glob
 import logging
 import os
-import shutil
 
 import pandas
 import tensorflow as tf
 
 from common import constants, utils
-from generators.OverlappedSlidingWindow import OverlappedSlidingWindow
+from generators.OverlappedSequence import OverlappedSequenceBuilder
 
 # Avoid the CUPTI_ERROR_INSUFFICIENT_PRIVILEGES running in the ATCBIOSIMUL server at UGR with 2 GeForce RTX 2080
 # SUPER GPU cards.
@@ -30,6 +28,7 @@ CODES = constants.CODES[:]
 BATCH_SIZE = [32]
 TIME_STEPS = [12]  # The smallest video just have 56 frames
 OVERLAPS = [0.8]
+LABELS = constants.LABELS[38:47]
 EPOCHS = 100
 PATIENCE = 10
 
@@ -37,27 +36,14 @@ TRL_PATH = f'models/{TRIAL}'
 
 
 def build_model(time_steps, nout):
-    # cnn_model = tf.keras.applications.mobilenet.MobileNet()
-    # cnn_model.summary();
-    # tf.keras.backend.clear_session()
-
-    # Load MobileNet model excluding top.
-    cnn_model = tf.keras.applications.mobilenet.MobileNet(
-        include_top=False,
-        input_shape=(224, 224, 3),
-        pooling="avg"
-    )
-    # cnn_model.summary();
-    # tf.keras.backend.clear_session()
-
-    # Freeze all layers.
-    for layer in cnn_model.layers:
-        layer.trainable = False
-
-    # Now build the RNN model.
     rnn_model = tf.keras.models.Sequential()
 
-    rnn_model.add(tf.keras.layers.TimeDistributed(cnn_model, input_shape=(time_steps, 224, 224, 3)))
+    rnn_model.add(
+        tf.keras.layers.TimeDistributed(
+            tf.keras.layers.GlobalAvgPool2D(),
+            input_shape=(time_steps, 7, 7, 1024)
+        )
+    )
 
     # Build the classification layer.
     rnn_model.add(tf.keras.layers.LSTM(64, return_sequences=True, dropout=0.5))
@@ -93,21 +79,6 @@ def train():
     data['trial'] = TRIAL
 
     for code in CODES:
-        # Remove all of the extracted directories from the dataset and extract them again.
-        shutil.rmtree(f'{constants.KERAS_PATH}/{TRIAL}/{constants.MPI_WONE_AUGMENTED_DATASET}', ignore_errors=True)
-        tf.keras.utils.get_file(
-            fname=f'{constants.MPI_WONE_AUGMENTED_DATASET}.tar',
-            origin=f'https://s3.us-east-2.amazonaws.com/datasets.pablosalgado.co/lg_mpi_db/{constants.MPI_WONE_AUGMENTED_DATASET}.tar',
-            cache_subdir=TRIAL,
-            extract=True
-        )
-
-        # Delete the next actress to leave her out of the training.
-        files = glob.glob(f'{constants.KERAS_PATH}/{TRIAL}/{constants.MPI_WONE_AUGMENTED_DATASET}/**/{code}*.avi',
-                          recursive=True)
-        for file in files:
-            os.remove(file)
-
         for batch_size in BATCH_SIZE:
             for time_steps in TIME_STEPS:
                 for overlap in OVERLAPS:
@@ -123,25 +94,15 @@ def train():
                         preprocessing_function=tf.keras.applications.mobilenet.preprocess_input
                     )
 
-                    train_idg = OverlappedSlidingWindow(
+                    builder = OverlappedSequenceBuilder(
+                        filename='/home/psalgado/expert-robot/expert-robot.h5',
+                        path='/features/224x224/wone/augmented/mobilenet/conv_pw_13_relu',
+                        labels=LABELS,
                         overlap=overlap,
-                        classes=constants.LABELS[38:47],
-                        glob_pattern=constants.KERAS_PATH + '/' + TRIAL + '/' + constants.MPI_WONE_AUGMENTED_DATASET + '/{classname}/*.avi',
-                        nb_frames=time_steps,
-                        split_val=.2,
-                        shuffle=True,
-                        batch_size=batch_size,
-                        target_shape=(224, 224),
-                        nb_channel=3,
-                        transformation=data_aug,
-                        use_frame_cache=False
+                        sequence_size=time_steps,
+                        split=0.8,
+                        test=code
                     )
-
-                    sample_path = TRL_PATH + f'/{code}/{batch_size}/{time_steps}/sample.png'
-                    if not os.path.exists(sample_path):
-                        utils.save_sample(sample_path, train_idg)
-
-                    validation_idg = train_idg.get_validation_generator()
 
                     row = {
                         'trial': f'{TRIAL}',
@@ -150,8 +111,8 @@ def train():
                         'batch_size': batch_size,
                         'time_steps': time_steps,
                         'overlap': overlap,
-                        'files': train_idg.files_count,
-                        'sequences': len(train_idg.vid_info)
+                        'files': builder.files_count,
+                        'sequences': builder.get_training_sequence().get_sequences_count()
                     }
                     data = data.append(row, ignore_index=True)
 
@@ -162,8 +123,8 @@ def train():
                         'batch_size': batch_size,
                         'time_steps': time_steps,
                         'overlap': overlap,
-                        'files': validation_idg.files_count,
-                        'sequences': len(validation_idg.vid_info)
+                        'files': builder.files_count,
+                        'sequences': builder.get_validation_sequence().get_sequences_count()
                     }
                     data = data.append(row, ignore_index=True)
 
@@ -200,8 +161,8 @@ def train():
                     ]
 
                     history = model.fit(
-                        train_idg,
-                        validation_data=validation_idg,
+                        builder.get_training_sequence(),
+                        validation_data=builder.get_validation_sequence(),
                         callbacks=callbacks,
                         epochs=EPOCHS,
                     )

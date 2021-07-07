@@ -53,7 +53,7 @@ class OverlappedSequenceBuilder:
         """
         file = h5py.File(self.__filename, 'r')
 
-        files_count = 0
+        self.files_count = 0
 
         print('Checking files to find possible sequences, please wait...')
 
@@ -64,7 +64,7 @@ class OverlappedSequenceBuilder:
                 if self.__test in name:
                     continue
 
-                files_count += 1
+                self.files_count += 1
 
                 dataset = file[self.__path][label][name]
 
@@ -81,7 +81,7 @@ class OverlappedSequenceBuilder:
 
                     i = round(i + self.__sequence_size - self.__sequence_size * self.__overlap)
 
-        print(f'For {files_count} files, I found {len(self.__sequences)} possible sequence samples')
+        print(f'For {self.files_count} files, I found {len(self.__sequences)} possible sequence samples')
 
         file.close()
 
@@ -203,3 +203,6 @@ class OverlappedSequence(tf.keras.utils.Sequence):
 
         if self.__shuffle:
             np.random.shuffle(self.__indexes)
+
+    def get_sequences_count(self):
+        return len(self.__sequences)
