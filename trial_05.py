@@ -7,15 +7,19 @@
 
 import logging
 import os
+import pathlib
 
+import numpy as np
 import pandas
 import tensorflow as tf
+from sklearn import metrics
 
 from common import constants, utils
 from generators.OverlappedSequence import OverlappedSequenceBuilder
-
 # Avoid the CUPTI_ERROR_INSUFFICIENT_PRIVILEGES running in the ATCBIOSIMUL server at UGR with 2 GeForce RTX 2080
 # SUPER GPU cards.
+from generators.OverlappedSlidingWindow import OverlappedSlidingWindow
+
 config = tf.compat.v1.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.compat.v1.Session(config=config)
@@ -170,12 +174,108 @@ def train():
                     utils.plot_acc_loss(history, f'{path}/{code}-{batch_size}-{time_steps}-{overlap}-plot.png')
 
 
+def evaluate():
+    MODELS_PATH = pathlib.Path(__file__).parent / 'models'
+    trial = 5
+    code = 'islf'
+    batch_size = 32
+    sequence_size = 12
+    overlap = 0.8
+    path = f'trial_{trial:02}/{code}/{batch_size}/{sequence_size}/{overlap}'
+    model_path = MODELS_PATH / path / 'model'
+
+    # Load the best saved model.
+    tf.config.experimental_run_functions_eagerly(True)
+
+    cnn_model = tf.keras.applications.mobilenet.MobileNet(
+        include_top=False,
+        input_shape=(224, 224, 3),
+        weights='imagenet'
+    )
+    # tf.keras.utils.plot_model(cnn_model, "cnn_model.png", show_shapes=True)
+
+    rnn_model = tf.keras.models.load_model(model_path)
+
+    # tf.keras.utils.plot_model(rnn_model, "rnn_model.png", show_shapes=True)
+
+    model = tf.keras.models.Sequential()
+    model.add(
+        tf.keras.layers.TimeDistributed(
+            cnn_model,
+            input_shape=(12, 224, 224, 3)
+        )
+    )
+    model.add(rnn_model)
+
+    # tf.keras.utils.plot_model(model, "model.png", show_shapes=True)
+    model.summary()
+
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(),
+        loss=tf.keras.losses.categorical_crossentropy,
+        metrics=['accuracy']
+    )
+
+    data_aug = tf.keras.preprocessing.image.ImageDataGenerator(
+        preprocessing_function=tf.keras.applications.mobilenet.preprocess_input
+    )
+
+    x = OverlappedSlidingWindow(
+        overlap=overlap,
+        classes=LABELS,
+        glob_pattern=constants.KERAS_PATH + '/evaluation/' + constants.MPI_WONE_AUGMENTED_DATASET + '/{classname}/*.avi',
+        nb_frames=sequence_size,
+        split_val=None,
+        shuffle=False,
+        batch_size=1,
+        target_shape=(224, 224),
+        nb_channel=3,
+        transformation=data_aug,
+        use_frame_cache=False
+    )
+
+    # --------------------------------------------------------------------------------------------------------------
+    # Evaluate model
+    # --------------------------------------------------------------------------------------------------------------
+    print(f'Evaluating: {model_path}')
+    evaluation = model.evaluate(x, verbose=1)
+    print(evaluation)
+
+    # --------------------------------------------------------------------------------------------------------------
+    # Build the confusion matrix and the classification report for the current model.
+    # --------------------------------------------------------------------------------------------------------------
+
+    # Build the array of actual class for each generated sequence.
+    labels = [LABELS.index(c) for c in [pathlib.PurePath(vi['name']).parts[-2] for vi in x.vid_info]]
+
+    # Make predictions.
+    model_predictions = model.predict(x, verbose=1)
+
+    # Build the array of predicted classes by taking the class with the highest probability.
+    predictions = [prediction.argmax() for prediction in model_predictions]
+
+    # Build and save the confusion matrix.
+    cm = tf.math.confusion_matrix(labels, predictions=predictions)
+    cm_filename = f'{"cm_"}{path.replace("/", "_")}.csv'
+    np.savetxt(cm_filename, cm.numpy(), delimiter=',')
+
+    # Build the classification report
+    cr_dict = metrics.classification_report(
+        labels,
+        predictions,
+        target_names=labels,
+        output_dict=True
+    )
+
+    print(cr_dict)
+
+
 if __name__ == '__main__':
     os.makedirs(f'{TRL_PATH}', exist_ok=True)
     logging.basicConfig(filename=f'{TRL_PATH}/error.log', filemode='w')
     logger = logging.getLogger(__name__)
     try:
-        train()
+        evaluate()
     except Exception:
         logger.exception("")
         raise
