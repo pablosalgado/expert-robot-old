@@ -184,9 +184,11 @@ def evaluate():
     path = f'trial_{trial:02}/{code}/{batch_size}/{sequence_size}/{overlap}'
     model_path = MODELS_PATH / path / 'model'
 
+    # Prepare dataset for evaluation.
+    utils.prepare_test_dataset(constants.MPI_WONE_AUGMENTED_DATASET, 'evaluation', code)
+
     # Load the best saved model.
     tf.config.experimental_run_functions_eagerly(True)
-
     cnn_model = tf.keras.applications.mobilenet.MobileNet(
         include_top=False,
         input_shape=(224, 224, 3),
@@ -202,7 +204,7 @@ def evaluate():
     model.add(
         tf.keras.layers.TimeDistributed(
             cnn_model,
-            input_shape=(12, 224, 224, 3)
+            input_shape=(sequence_size, 224, 224, 3)
         )
     )
     model.add(rnn_model)
